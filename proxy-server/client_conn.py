@@ -18,25 +18,37 @@ def parse_headers(data):
     return {"webserver": webserver, "port": port}#, "location_on_server":locationOnSever}
 
 def handle_conn(conn, addr):
-    print("connected to {0}".format(addr))
-    while True:
-        data = conn.recv(10000)
-        
-        header = parse_headers(data)
+    '''
+    handle connections to requesting clients
+    forward to the actual external server
+    send the response of the server back to the requesting client
+    '''
 
-        s = socket.socket()
-        ip = socket.gethostbyname(header['webserver'])
-        s.connect((ip, header['port']))
-        s.sendall(data)
-        print(data.decode())
-        data = ""
-        while True:
-            print(ip)
-            chunk = s.recv(1024)
-            if len(chunk) == 0:
-                break
-            data = data+chunk.decode()
-            print(data)
-        conn.sendall(data.encode())
+    print("connected to {0}".format(addr))
+    data = conn.recv(10000)
+    
+    header = parse_headers(data)
+
+    #establish connection with the actual external website
+    s = socket.socket()
+    ip = socket.gethostbyname(header['webserver'])
+    s.connect((ip, header['port']))
+    s.sendall(data)
+    print(data.decode())
+    
+    # recieve response from the external website
+    data = ""
+    while True:
+        print(ip)
+        chunk = s.recv(1024)
+        if len(chunk) == 0:
+            break
+        data = data+chunk.decode()
+        print(data)
+
+    #send reponse back to the requesting client
+    conn.sendall(data.encode())
+
     conn.close()
+
     print("connection closed to {0}".format(addr))
