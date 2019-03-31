@@ -14,6 +14,7 @@ class Cache:
         Get cached request
         """
         if request in self.cache:
+            self.cache[request]['access_time'] = time.time()
             return self.cache[request]['content']
         return None
     
@@ -27,7 +28,7 @@ class Cache:
         self.cache[request] = {'access_time':time.time(), 'content':content}
 
 
-    def update_cache(self, request, content):
+    def update(self, request, content):
         """
         Cache all requests made thrice in last 5 minutes, else remove
         """
