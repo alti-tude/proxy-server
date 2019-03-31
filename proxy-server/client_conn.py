@@ -3,7 +3,6 @@ import socket
 def parse_headers(data):
     print(data.decode())
     packetLines = data.decode().split('\n')
-    # locationOnSever = packetLines[0].split(' ')[1]
     
     webserver = ""
     port = 80
@@ -13,9 +12,9 @@ def parse_headers(data):
             webserver = words[1].strip(' \r\n')
             if len(words)==3:
                 port = int(words[2].strip(' \r\n'))
-    print(webserver, port)#, locationOnSever)
+    print(webserver, port)
 
-    return {"webserver": webserver, "port": port}#, "location_on_server":locationOnSever}
+    return {"webserver": webserver, "port": port}
 
 def handle_conn(conn, addr):
     '''
@@ -40,12 +39,12 @@ def handle_conn(conn, addr):
     # recieve response from the external website
     data = ""
     while True:
-        print(ip)
+        print("here")
         chunk = s.recv(1024)
-        if len(chunk) == 0:
-            break
         data = data+chunk.decode()
-        # print(data)
+        print(data)
+        if len(chunk) < 1024:
+            break
 
     print("---------------received server ----------------------")
     print(data)
