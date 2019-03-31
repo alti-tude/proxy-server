@@ -48,7 +48,7 @@ def handle_conn(conn, addr):
     print("---------------received server ----------------------")
     print(data)
     #send reponse back to the requesting client
-    conn.sendall(data.encode())
+    # conn.sendall(data.encode())
 
     conn.close()
 
