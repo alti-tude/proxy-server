@@ -33,7 +33,7 @@ def handle_conn(conn, addr):
     s = socket.socket()
     ip = socket.gethostbyname(header['webserver'])
     s.connect((ip, header['port']))
-    # s.sendall(data)
+    s.sendall(data)
     print("---------------received client ----------------------")
     print(data.decode())
     print("-----------------------------------------------------")
@@ -76,9 +76,11 @@ def handle_conn(conn, addr):
             conn.settimeout(None)
             break
 
-        size += len(chunk.decode())
-        data = data + chunk.decode()
-
+        try:
+            size += len(chunk.decode())
+            data = data + chunk.decode()
+        except:
+            continue
         if len(chunk.decode()) == 0:
             break
 
