@@ -1,4 +1,5 @@
 import time
+import urllib.request
 
 class Cache:
     """ LRU cache """
@@ -14,8 +15,19 @@ class Cache:
         Get cached request
         """
         if request in self.cache:
-            self.cache[request]['access_time'] = time.time()
-            return self.cache[request]['content']
+            check_request = urllib.request.Request(request)
+            timestamp = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(self.cache[request]['access_time']))
+            check_request.add_header('If-Modified-Since', timestamp)
+            try:
+                _ = urllib.request.urlopen(check_request)
+            except urllib.error.HTTPError as err:
+                if err.code == 304:
+                    self.cache[request]['access_time'] = time.time()
+                    return self.cache[request]['content']
+                elif err.code == 200:
+                    del self.cache[request]
+                else:
+                    print("ERROR: Could not retrieve URL")
         return None
     
     
