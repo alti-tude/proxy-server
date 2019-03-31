@@ -41,7 +41,8 @@ def handle_conn(conn, addr):
     while True:
         chunk = s.recv(1024)
         conn.send(chunk)
-        # print(data)
+        data = data+chunk.decode()
+        print(data)
         if len(chunk) < 1024:
             break
 
