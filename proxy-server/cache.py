@@ -7,21 +7,25 @@ class Cache:
         self.cache = {}
         self.request_count = {}
         self.MAX_SIZE = max_size
-
-
-    def cached(self, request):
-        """
-        Check if request is cached
-        """
-        return True if request in self.cache else False
     
 
     def get_cache(self, request):
         """
         Get cached request
         """
-        return self.cache[request]['content']
+        if request in self.cache:
+            return self.cache[request]['content']
+        return None
     
+    
+    def set_cache(self, request, content):
+        """
+        Add / Update value to cache
+        """
+        if request not in self.cache and len(self.cache) >= self.MAX_SIZE:
+            self.remove_lru()
+        self.cache[request] = {'access_time':time.time(), 'content':content}
+
 
     def update_cache(self, request, content):
         """
@@ -65,13 +69,3 @@ class Cache:
                 oldest_request = request
         del self.cache[oldest_request]
 
-
-    def set_cache(self, request, content):
-        """
-        Add / Update value to cache
-        """
-        if request not in self.cache and len(self.cache) >= self.MAX_SIZE:
-            self.remove_lru()
-        self.cache[request] = {'access_time':time.time(), 'content':content}
-
-    
