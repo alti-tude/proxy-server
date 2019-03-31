@@ -34,6 +34,7 @@ def handle_conn(conn, addr):
     ip = socket.gethostbyname(header['webserver'])
     s.connect((ip, header['port']))
     s.sendall(data)
+    print("---------------received client ----------------------")
     print(data.decode())
     
     # recieve response from the external website
@@ -44,8 +45,10 @@ def handle_conn(conn, addr):
         if len(chunk) == 0:
             break
         data = data+chunk.decode()
-        print(data)
+        # print(data)
 
+    print("---------------received server ----------------------")
+    print(data)
     #send reponse back to the requesting client
     conn.sendall(data.encode())
 
