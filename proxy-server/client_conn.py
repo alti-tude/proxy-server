@@ -39,10 +39,9 @@ def handle_conn(conn, addr):
     # recieve response from the external website
     data = ""
     while True:
-        print("here")
         chunk = s.recv(1024)
-        data = data+chunk.decode()
-        print(data)
+        conn.send(chunk)
+        # print(data)
         if len(chunk) < 1024:
             break
 
