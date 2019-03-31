@@ -14,7 +14,8 @@ def parse_headers(data):
                 port = int(words[2].strip(' \r\n'))
     print(webserver, port)
 
-    return {"webserver": webserver, "port": port}
+    connection_type = packetLines[0].split(' ')[0]
+    return {"webserver": webserver, "port": port, "connection_type": connection_type}
 
 def handle_conn(conn, addr):
     '''
@@ -32,24 +33,61 @@ def handle_conn(conn, addr):
     s = socket.socket()
     ip = socket.gethostbyname(header['webserver'])
     s.connect((ip, header['port']))
-    s.sendall(data)
+    # s.sendall(data)
     print("---------------received client ----------------------")
     print(data.decode())
+    print("-----------------------------------------------------")
     
-    # recieve response from the external website
+    if header["connection_type"] == "CONNECT":
+        d = 'HTTP/1.1 200 Connection established\r\n'
+        conn.sendall(d.encode())
+        try:
+            conn.settimeout(4)
+            data = conn.recv(1024)
+        except Exception as e:
+            print(e)
+            conn.close()
+            return
+        print(data.decode())
+        s.sendall(data)
+        
+    
     data = ""
+    size = 0
     while True:
-        chunk = s.recv(1024)
-        conn.send(chunk)
-        data = data+chunk.decode()
-        print(data)
-        if len(chunk) < 1024:
+        chunk=""
+        # recieve response from the external website
+        try:
+            s.settimeout(4)
+            chunk = s.recv(256)
+            s.settimeout(None)
+        except Exception as e:
+            print(e) 
+            s.settimeout(None)
+            break
+
+        #send reponse back to the requesting client
+        try:
+            conn.settimeout(4)
+            conn.send(chunk)
+            conn.settimeout(None)
+        except Exception as e:
+            print(e) 
+            conn.settimeout(None)
+            break
+
+        size += len(chunk.decode())
+        data = data + chunk.decode()
+
+        if len(chunk.decode()) == 0:
             break
 
     print("---------------received server ----------------------")
     print(data)
-    #send reponse back to the requesting client
-    # conn.sendall(data.encode())
+    print("size recvd ==== ", size)
+
+    print("--------------------------------------------------")
+
 
     conn.close()
 
