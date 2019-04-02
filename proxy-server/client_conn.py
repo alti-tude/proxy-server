@@ -16,22 +16,31 @@ class Server(Node):
         self.response = ''
 
 
-    def connect(self, request):
+    def connect(self, request, blacklist):
         self.headers = Node.parse_headers(self,request)
         ip = socket.gethostbyname(self.headers['webserver'])
+        if blacklist.blacklisted(ip):
+            return -1
         self.sock.connect((ip, self.headers['port']))
+        return 0
         
-    def proc_request(self,request):
+    def proc_request(self,request,blacklist):
         self.request = request
-        self.connect(request)
+        result = self.connect(request,blacklist)
+        
+        if result == -1:
+            return -1
         
         ##check cache
         
         self.send_data(request)
         self.response = self.get_data()
-    
-    def get_response(self,request):
-        self.proc_request(request)
+        return 0
+
+    def get_response(self,request,blacklist):
+        result = self.proc_request(request,blacklist)
+        if result == -1:
+            return -1
         return self.response
         
         
@@ -66,7 +75,7 @@ class Server(Node):
 #         connection_type = packetLines[0].split(' ')[0]
 #         return {"webserver": webserver, "port": port, "connection_type": connection_type}
 
-def handle_conn(conn, addr):
+def handle_conn(conn, addr, blacklist):
     '''
     handle connections to requesting clients
     forward to the actual external server
@@ -85,9 +94,13 @@ def handle_conn(conn, addr):
     request = client.get_data()
     print(request)
     server = Server()
-    response = server.get_response(request)
-    print(response)
-    client.send_data(response)
+    response = server.get_response(request, blacklist)
+    if response == -1:
+        print("ACCESS TO WEBSITE BLOCKED")
+        client.send_data(b'ACCESS BLOCKED\n')
+    else:  
+        print(response)
+        client.send_data(response)
     client.close()
     server.close()
     # data = conn.recv(10000)
