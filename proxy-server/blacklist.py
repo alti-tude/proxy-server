@@ -21,3 +21,7 @@ class Blacklist:
             if ip in net:
                 return True
         return False
+
+
+if __name__ = '__main__':
+    pass
