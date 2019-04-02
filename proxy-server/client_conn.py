@@ -2,10 +2,10 @@ import socket
 from node import Node
 
 
-
 class Client(Node):
     def __init__(self, conn):
         Node.__init__(self,conn)
+
 
 class Server(Node):
     def __init__(self):
@@ -16,17 +16,17 @@ class Server(Node):
         self.response = ''
 
 
-    def connect(self, request, blacklist):
+    def connect(self, request, blacklist, auth_users):
         self.headers = Node.parse_headers(self,request)
         ip = socket.gethostbyname(self.headers['webserver'])
-        if blacklist.blacklisted(ip):
+        if blacklist.blacklisted(ip) and self.headers['auth'] not in auth_users:
             return -1
         self.sock.connect((ip, self.headers['port']))
         return 0
         
-    def proc_request(self,request,blacklist):
+    def proc_request(self,request,blacklist,auth_users):
         self.request = request
-        result = self.connect(request,blacklist)
+        result = self.connect(request,blacklist,auth_users)
         
         if result == -1:
             return -1
@@ -37,8 +37,8 @@ class Server(Node):
         self.response = self.get_data()
         return 0
 
-    def get_response(self,request,blacklist):
-        result = self.proc_request(request,blacklist)
+    def get_response(self,request,blacklist,auth_users):
+        result = self.proc_request(request,blacklist,auth_users)
         if result == -1:
             return -1
         return self.response
@@ -75,7 +75,7 @@ class Server(Node):
 #         connection_type = packetLines[0].split(' ')[0]
 #         return {"webserver": webserver, "port": port, "connection_type": connection_type}
 
-def handle_conn(conn, addr, blacklist):
+def handle_conn(conn, addr, blacklist, auth_users):
     '''
     handle connections to requesting clients
     forward to the actual external server
@@ -93,14 +93,16 @@ def handle_conn(conn, addr, blacklist):
 
     request = client.get_data()
     print(request)
+
     server = Server()
-    response = server.get_response(request, blacklist)
+    response = server.get_response(request, blacklist, auth_users)
     if response == -1:
         print("ACCESS TO WEBSITE BLOCKED")
         client.send_data(b'ACCESS BLOCKED\n')
     else:  
         print(response)
         client.send_data(response)
+    
     client.close()
     server.close()
     # data = conn.recv(10000)

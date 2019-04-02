@@ -1,4 +1,5 @@
 import socket
+import base64
 
 class Node():
     def __init__(self, conn):
@@ -36,6 +37,8 @@ class Node():
     def parse_headers(self, data):
         packetLines = data.decode().split('\n')
 
+        for x in packetLines:
+            print(x)
         webserver = ""
         port = 80
         headers = {}
@@ -48,6 +51,10 @@ class Node():
                 webserver = words[1].strip(' \r\n')
                 if len(words)==3:
                     port = int(words[2].strip(' \r\n'))
+            elif words[0] == 'Authorization':
+                auth = words[1].split(' ')
+                auth = auth[-1].strip(' \r\n')
+                auth = bytes(auth, 'utf-8')
             elif len(words) == 2:
                 headers[words[0]] = words[1]
 
@@ -55,5 +62,6 @@ class Node():
         headers['first_line'] = packetLines[0]
         headers['webserver'] = webserver
         headers['port'] = port
+        headers['auth'] = auth
 
         return headers
