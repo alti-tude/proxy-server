@@ -25,8 +25,11 @@ class Node():
     def send_data(self, data):
         try:
             self.sock.sendall(data)
+            print(data)
         except Exception as e:
             print(e)
+            print("Closing connection to {0}".format(self.sock), e)
+            self.close()
             return False
         return True
 

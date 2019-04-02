@@ -13,8 +13,9 @@ class Blacklist:
     def blacklisted(self, ip):
         try:
             ip = ipaddress.ip_address(ip)
-        except:
+        except Exception as e:
             print("ERROR: Given string is not an IP")
+            print("Sys Error: ", e)
             return None
         for cidr in self.__blacklist_addr:
             net = ipaddress.ip_network(cidr)
@@ -23,5 +24,6 @@ class Blacklist:
         return False
 
 
-if __name__ = '__main__':
-    pass
+if __name__ == '__main__':
+    blacklist = Blacklist("fil")
+    print(blacklist.blacklisted("192.168.43.208"))

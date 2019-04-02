@@ -76,13 +76,16 @@ def handle_conn(conn, addr):
     print("connected to {0}".format(addr))
     client = Client(conn)
     request = client.get_data()
-    print(request)
-    server = Server()
-    response = server.get_response(request)
-    print(response)
-    client.send_data(response)
+    basic_auth = b'HTTP/1.1 401 not found\r\nContent-Length: 0\r\n\r\n'
+    client.send_data(basic_auth)
     client.close()
-    server.close()
+    print(request)
+    # server = Server()
+    # response = server.get_response(request)
+    # print(response)
+    # client.send_data(response)
+    # client.close()
+    # server.close()
     # data = conn.recv(10000)
     
     # header = parse_headers(data)
@@ -147,4 +150,4 @@ def handle_conn(conn, addr):
 
     # conn.close()
 
-    print("connection closed to {0}".format(addr))
+    # print("connection closed to   {0}".format(addr))
