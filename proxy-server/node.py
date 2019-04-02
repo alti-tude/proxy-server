@@ -42,6 +42,7 @@ class Node():
         webserver = ""
         port = 80
         headers = {}
+        auth = b''
         for line in packetLines:
             words = line.split(':')
             if len(words)==0:
