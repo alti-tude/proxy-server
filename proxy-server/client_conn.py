@@ -75,6 +75,13 @@ def handle_conn(conn, addr):
 
     print("connected to {0}".format(addr))
     client = Client(conn)
+
+    if addr[1] < 20000 or addr[1] > 20099:
+        print("[*] Restricted address ", addr[1])
+        client.send_data(b'Restricted access\n')
+        client.close()
+        return
+
     request = client.get_data()
     print(request)
     server = Server()
