@@ -45,7 +45,9 @@ class Server(Node):
         self.connect(ip)
         self.send_data(request)
         self.response = self.get_data()
-        self.cache.update(self.request, self.response)
+
+        if b'no-cache' not in self.response:
+            self.cache.update(self.request, self.response)
 
         return self.response
 
