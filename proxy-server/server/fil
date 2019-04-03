@@ -8,3 +8,5 @@
 127.0.0.1 - - [03/Apr/2019 21:27:13] "GET http://localhost:10000/ HTTP/1.1" 404 -
 127.0.0.1 - - [03/Apr/2019 21:52:36] code 404, message File not found
 127.0.0.1 - - [03/Apr/2019 21:52:36] "GET http://localhost:10000/server.py HTTP/1.1" 404 -
+127.0.0.1 - - [03/Apr/2019 22:19:31] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [03/Apr/2019 22:19:31] "POST http://localhost:10000/ HTTP/1.1" 501 -

@@ -1,20 +1,26 @@
-import SimpleHTTPServer as sh
 import SocketServer as ss
-import os
 import time
-import sys
 import threading
 import logging
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import SocketServer
+import os
+import sys
 
-portRange = (10000, 10011)
+class S(BaseHTTPRequestHandler):
+    def _set_headers(self, resp):
+        self.send_response(resp)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
 
-class request_handler(sh.SimpleHTTPRequestHandler):
-    def send_head(self):
-        if self.command != "POST" and self.headers.get('If-Modified-Since', None):
-            if "http" in self.path:
-                filename = '/'.join(self.path.replace("://", "/").split('/')[2:])
-            filename = filename.strip("/")
-            
+    def do_GET(self):
+        filename = ""
+        if "http" in self.path:
+            filename = '/'.join(self.path.replace("://", "/").split('/')[2:])
+        filename = filename.strip("/")
+        self.log_message(filename)
+        if self.headers.get('If-Modified-Since', None):
+
             if os.path.isfile(filename):
                 a = time.gmtime(os.path.getmtime(filename))
                 b = time.strptime(self.headers.get('If-Modified-Since', None), "%a, %d %b %Y %H:%M:%S %Z")
@@ -23,28 +29,32 @@ class request_handler(sh.SimpleHTTPRequestHandler):
                     self.send_response(304)
                     self.end_headers()
                     return None
-        return SimpleHTTPServer.SimpleHTTPRequestHandler.send_head(self)
+                else:
+                    self.send_response(200)
+                    self.end_headers()
+                    return None
 
-    def end_headers(self):
-        self.send_header('Cache-control', 'must-revalidate')
-        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
-
+        self._set_headers(200)
+        if os.path.isfile(filename):
+            fil = open(filename, "rb")
+            data = b''
+            while True:
+                chunk = fil.read()
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+        
     def do_POST(self):
-        self.send_response(200)
-        self.send_header('Cache-control', 'no-cache')
-        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
+        # Doesn't do anything with posted data
+        self._set_headers(200)
+        self.wfile.write("<html><body><h1>POST!</h1></body></html>")
+        
+def run(port):
+    server_address = ('', port)
+    httpd = HTTPServer(server_address, S)
+    print 'Starting httpd...', port
+    httpd.serve_forever()
 
-def run_server(port):
-    print "starting server on port", port
-    handler = sh.SimpleHTTPRequestHandler
-    s = ss.ThreadingTCPServer(('', port), handler)
-    s.allow_reuse_address = True
-    s.serve_forever()
-
-if __name__ == '__main__':
-    t = ''
-    for i in range(portRange[0], portRange[1]):
-        t = threading.Thread(target=run_server, args=(i,))
-        t.start()
+if __name__ == "__main__":
+    run(int(sys.argv[1]))
     
-    t.join()

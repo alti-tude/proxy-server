@@ -28,7 +28,6 @@ class Cache:
             check_request.insert(-2, 'If-Modified-Since: %s' % timestamp)
             check_request = '\r\n'.join(check_request).encode()
             resp = server.get_response(check_request).decode().split('\r\n')[0]
-            print("cache wali backchodi ------------------------####################")
             print(check_request)
             if '304' in resp:
                 self.cache[request]['access_time'] = time.time()

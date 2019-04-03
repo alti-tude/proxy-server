@@ -17,10 +17,12 @@ class Blacklist:
             print("ERROR: Given string is not an IP")
             print("Sys Error: ", e)
             return None
+            
         for cidr in self.__blacklist_addr:
             net = ipaddress.ip_network(cidr)
             if ip in net:
                 return True
+        print("asakjhdjkahdjkahjdkahjkhjskahjkasdh")
         return False
 
 

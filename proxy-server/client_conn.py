@@ -22,8 +22,12 @@ class Server(Node):
     def connect(self, ip):
         self.sock.close()
         self.sock = socket.socket()
-        self.sock.connect((ip, self.headers['port']))
-        
+        try:
+            self.sock.connect((ip, self.headers['port']))
+            return True
+        except:
+            return False
+            
     def proc_request(self,request):
         self.request = request
         self.headers = Node.parse_headers(self, request)
@@ -39,10 +43,10 @@ class Server(Node):
             self.response = self.cache.get_cache(Server(self.blacklist, self.auth_users, self.cache),self.request)
             if self.response:
                 self.cache.update(self.request, self.response)
-                print("from cache-------", self.response[0:10])
                 return self.response
         
-        self.connect(ip)
+        if not self.connect(ip):
+            return None
         self.send_data(request)
         self.response = self.get_data()
 
