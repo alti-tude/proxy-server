@@ -7,66 +7,69 @@ class Client(Node):
     def __init__(self, conn):
         Node.__init__(self,conn)
 
+
 class Server(Node):
-    def __init__(self):
+    def __init__(self, blacklist, auth_users, cache):
         self.sock = socket.socket()
         super().__init__(self.sock)
         self.headers = {}
         self.request = ''
         self.response = ''
+        self.blacklist = blacklist
+        self.auth_users = auth_users
+        self.cache = cache
 
-
-    def connect(self, request):
-        self.headers = Node.parse_headers(self,request)
-        ip = socket.gethostbyname(self.headers['webserver'])
+    def connect(self, ip):
+        self.sock.close()
+        self.sock = socket.socket()
         self.sock.connect((ip, self.headers['port']))
         
     def proc_request(self,request):
         self.request = request
-        self.connect(request)
+        self.headers = Node.parse_headers(self, request)
+
+        #check blacklist
+        ip = socket.gethostbyname(self.headers['webserver'])
+        if self.blacklist.blacklisted(ip) and self.headers['auth'] not in self.auth_users:
+            return None
         
-        ##check cache
+        #check cache
+        if self.headers['conn_type'] == 'GET':
+            print(self.cache.request_count)
+            self.response = self.cache.get_cache(Server(self.blacklist, self.auth_users, self.cache),self.request)
+            if self.response:
+                self.cache.update(self.request, self.response)
+                print("from cache-------", self.response[0:10])
+                return self.response
         
+        self.connect(ip)
         self.send_data(request)
         self.response = self.get_data()
-    
-    def get_response(self,request):
-        self.proc_request(request)
+        self.cache.update(self.request, self.response)
+
         return self.response
+
+    def get_response_full(self,request):
+        return self.proc_request(request)
+    
+    def get_response(self, request):
+        self.request = request
+        self.headers = Node.parse_headers(self, request)
+
+        ip = socket.gethostbyname(self.headers['webserver'])
+        self.connect(ip)        
+        self.send_data(request)
+        self.response = self.get_data()
+        return self.response
+
+    def close(self):
+        self.sock.close()
+        self.sock = socket.socket()
+
         
         
 
-# class handler():
-#     def __init__(self, conn, addr):
-#         self.client = conn
-#         self.server = server_init(addr)        
-#         self.timeout = 4
-
-#     def server_init(self, addr):
-#         data = 
-#         header = parse_headers
-#         self.server = socket.socket()
-#         ip = socket.gethostbyname(header['webserver'])
-#         self.server.connect((ip, header['port']))
-
-#     def parse_headers(self, data):
-#         print(data.decode())
-#         packetLines = data.decode().split('\n')
-        
-#         webserver = ""
-#         port = 80
-#         for line in packetLines:
-#             words = line.split(':')
-#             if words[0] == 'Host':
-#                 webserver = words[1].strip(' \r\n')
-#                 if len(words)==3:
-#                     port = int(words[2].strip(' \r\n'))
-#         print(webserver, port)
-
-#         connection_type = packetLines[0].split(' ')[0]
-#         return {"webserver": webserver, "port": port, "connection_type": connection_type}
-
-def handle_conn(conn, addr):
+def handle_conn(conn, addr, blacklist, auth_users, cache):
     '''
     handle connections to requesting clients
     forward to the actual external server
@@ -75,79 +78,28 @@ def handle_conn(conn, addr):
 
     print("connected to {0}".format(addr))
     client = Client(conn)
-    request = client.get_data()
-    basic_auth = b'HTTP/1.1 401 not found\r\nContent-Length: 0\r\n\r\n'
-    client.send_data(basic_auth)
-    client.close()
-    print(request)
-    # server = Server()
-    # response = server.get_response(request)
-    # print(response)
-    # client.send_data(response)
-    # client.close()
-    # server.close()
-    # data = conn.recv(10000)
-    
-    # header = parse_headers(data)
 
-    # #establish connection with the actual external website
-    
+    # if addr[1] < 20000 or addr[1] > 20099:
+    #     print("[*] Restricted address ", addr[1])
+    #     client.send_data(b'Restricted access\n')
+    #     client.close()
+    #     return
 
-    # print("---------------received client ----------------------")
-    # print(data.decode())
-    # print("-----------------------------------------------------")
-    
-    # if header["connection_type"] == "CONNECT":
-    #     d = 'HTTP/1.1 200 Connection established\r\n'
-    #     conn.sendall(d.encode())
-    #     try:
-    #         conn.settimeout(4)
-    #         data = conn.recv(1024)
-    #     except Exception as e:
-    #         print(e)
-    #         conn.close()
-    #         return
-    #     print(data.decode())
-    #     s.sendall(data)
-        
-    
-    # data = ""
-    # size = 0
+    server = Server(blacklist, auth_users, cache)
     # while True:
-    #     chunk=""
-    #     # recieve response from the external website
-    #     try:
-    #         s.settimeout(4)
-    #         chunk = s.recv(256)
-    #         s.settimeout(None)
-    #     except Exception as e:
-    #         print(e) 
-    #         s.settimeout(None)
-    #         break
+    request = client.get_data()
+    if len(request.decode()) == 0:
+        return
+    
+    print("request from client----------")
+    print(request)
 
-    #     #send reponse back to the requesting client
-    #     try:
-    #         conn.settimeout(4)
-    #         conn.send(chunk)
-    #         conn.settimeout(None)
-    #     except Exception as e:
-    #         print(e) 
-    #         conn.settimeout(None)
-    #         break
-
-    #     try:
-    #         size += len(chunk.decode())
-    #         data = data + chunk.decode()
-    #     except:
-    #         continue
-    #     if len(chunk.decode()) == 0:
-    #         break
-
-    # print("---------------received server ----------------------")
-    # print(data)
-    # print("size recvd ==== ", size)
-    # print("--------------------------------------------------")
-
-    # conn.close()
-
-    # print("connection closed to   {0}".format(addr))
+    response = server.get_response_full(request)
+    if not response:
+        print("ACCESS TO WEBSITE BLOCKED")
+        client.send_data(b'HTTP/1.1 401 ACCESS BLOCKED\r\n\r\n<body>ACCESS DENIED</body>')
+    else:  
+        client.send_data(response)
+    
+    client.close()
+   
