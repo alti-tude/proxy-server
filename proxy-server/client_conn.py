@@ -27,7 +27,7 @@ class Server(Node):
             return True
         except:
             return False
-            
+
     def proc_request(self,request):
         self.request = request
         self.headers = Node.parse_headers(self, request)
@@ -35,7 +35,7 @@ class Server(Node):
         #check blacklist
         ip = socket.gethostbyname(self.headers['webserver'])
         if self.blacklist.blacklisted(ip) and self.headers['auth'] not in self.auth_users:
-            return None
+            return "not auth"
         
         #check cache
         if self.headers['conn_type'] == 'GET':
@@ -100,10 +100,12 @@ def handle_conn(conn, addr, blacklist, auth_users, cache):
     print(request)
 
     response = server.get_response_full(request)
-    if not response:
+    if response == "not auth":
         print("ACCESS TO WEBSITE BLOCKED")
         client.send_data(b'HTTP/1.1 401 ACCESS BLOCKED\r\n\r\n<body>ACCESS DENIED</body>')
-    else:  
+    elif not response: 
+        client.send_data(b'HTTP/1.1 404 ACCESS BLOCKED\r\n\r\n<body>CANT FIND</body>')
+    else:
         client.send_data(response)
     
     client.close()
