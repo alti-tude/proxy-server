@@ -4,6 +4,7 @@ import client_conn as cc
 import blacklist as bl
 import base64
 import socket
+from copy import deepcopy
 
 portRange = (10000, 10011)
 
@@ -27,7 +28,8 @@ class Cache:
             check_request.insert(-2, 'If-Modified-Since: %s' % timestamp)
             check_request = '\r\n'.join(check_request).encode()
             resp = server.get_response(check_request).decode().split('\r\n')[0]
-
+            print("cache wali backchodi ------------------------####################")
+            print(check_request)
             if '304' in resp:
                 self.cache[request]['access_time'] = time.time()
                 return self.cache[request]['content']
@@ -61,7 +63,7 @@ class Cache:
         if request not in self.request_count:
             self.request_count[request] = {'request_time':time.time(), 'count':1}
         else:
-            if self.request_count[request]['count'] < 3:
+            if self.request_count[request]['count'] < 2:
                 self.request_count[request]['count'] += 1
             else:
                 self.set_cache(request, content)
@@ -74,12 +76,14 @@ class Cache:
         """
         Remove all requests not made thrice in last 5 minutes
         """
-        for request in self.request_count:
-            if (
+        d = {}
+        for request in list(self.request_count):
+            if not (
                     time.time() - self.request_count[request]['request_time'] >= 5*60 and
                     self.request_count[request]['count'] < 3
                 ):
-                del self.request_count[request]
+                d[request] = self.request_count[request]
+        self.request_count = d
         return
 
 

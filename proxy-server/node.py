@@ -5,13 +5,13 @@ class Node():
     def __init__(self, conn):
         self.sock = conn
         self.chunkSize = 1024
-        self.timeout = 2
+        self.timeout = 1
         
     def get_data(self):
         data = b''
         while True:
             try:
-                self.sock.settimeout(2)
+                self.sock.settimeout(self.timeout)
                 chunk = self.sock.recv(self.chunkSize)
                 self.sock.settimeout(None)
             except Exception as e:
@@ -59,7 +59,7 @@ class Node():
                 auth = auth[-1].strip(' \r\n')
                 auth = bytes(auth, 'utf-8')
             elif len(words) == 2:
-                headers[words[0]] = words[1]
+                headers[words[0]] = words[1].strip('\r\n').strip()
 
         print(webserver, port)
         headers['first_line'] = packetLines[0]

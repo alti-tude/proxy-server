@@ -1,0 +1,8 @@
+127.0.0.1 - - [03/Apr/2019 21:27:02] code 404, message File not found
+127.0.0.1 - - [03/Apr/2019 21:27:02] "GET http://localhost:10000/ HTTP/1.1" 404 -
+127.0.0.1 - - [03/Apr/2019 21:27:02] code 404, message File not found
+127.0.0.1 - - [03/Apr/2019 21:27:02] "GET http://localhost:10000/ HTTP/1.1" 404 -
+127.0.0.1 - - [03/Apr/2019 21:27:13] code 404, message File not found
+127.0.0.1 - - [03/Apr/2019 21:27:13] "GET http://localhost:10000/ HTTP/1.1" 404 -
+127.0.0.1 - - [03/Apr/2019 21:27:13] code 404, message File not found
+127.0.0.1 - - [03/Apr/2019 21:27:13] "GET http://localhost:10000/ HTTP/1.1" 404 -

@@ -34,7 +34,7 @@ class Server(Node):
             return None
         
         #check cache
-        if self.headers['conn_type'] == 'GET':
+        if self.headers['conn_type'] == 'GET' and self.headers['Cache-control'] != 'no-cache':
             print(self.cache.request_count)
             self.response = self.cache.get_cache(Server(self.blacklist, self.auth_users, self.cache),self.request)
             if self.response:
