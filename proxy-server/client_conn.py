@@ -34,7 +34,7 @@ class Server(Node):
             return None
         
         #check cache
-        if self.headers['conn_type'] == 'GET' and self.headers['Cache-control'] != 'no-cache':
+        if self.headers['conn_type'] == 'GET':
             print(self.cache.request_count)
             self.response = self.cache.get_cache(Server(self.blacklist, self.auth_users, self.cache),self.request)
             if self.response:
@@ -79,14 +79,13 @@ def handle_conn(conn, addr, blacklist, auth_users, cache):
     print("connected to {0}".format(addr))
     client = Client(conn)
 
-    # if addr[1] < 20000 or addr[1] > 20099:
-    #     print("[*] Restricted address ", addr[1])
-    #     client.send_data(b'Restricted access\n')
-    #     client.close()
-    #     return
+    if addr[1] < 20000 or addr[1] > 20099:
+        print("[*] Restricted address ", addr[1])
+        client.send_data(b'Restricted access\n')
+        client.close()
+        return
 
     server = Server(blacklist, auth_users, cache)
-    # while True:
     request = client.get_data()
     if len(request.decode()) == 0:
         return
