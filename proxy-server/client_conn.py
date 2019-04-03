@@ -46,7 +46,7 @@ class Server(Node):
         self.send_data(request)
         self.response = self.get_data()
 
-        if b'no-cache' in self.response:
+        if b'no-cache' not in self.response:
             self.cache.update(self.request, self.response)
 
         return self.response
