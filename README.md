@@ -1,4 +1,4 @@
-proxy-server
+PROXY SERVER
 ============
 
 # Proxy Server
