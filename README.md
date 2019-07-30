@@ -19,4 +19,3 @@ curl --proxy 127.0.0.1:20100 --local-port 20000-20099 http://www.fortune.com
 python3 main.py
 ```
 
-curl --proxy localhost:20100 --local-port 20000-20099 -X GET localhost:10000/server.py
